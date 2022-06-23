@@ -337,7 +337,7 @@ namespace TP5.Clases
 
         private void simular_fin_uso_instalacion()
         {
- 
+            tiempo_permanencia += formulario.tiempo_uso_instalacion;
             prox_cliente_fin_uso_instalacion.setHs_llegada(reloj.ToString());
             prox_cliente_fin_uso_instalacion.setFin_uso_instalacion("");
             prox_cliente_fin_uso_instalacion.setAccion("Devolucion");
@@ -373,7 +373,6 @@ namespace TP5.Clases
                     clientes_llegaron_biblioteca.Find(cli => cli.Equals(cliente)).setEstado(Cliente.LEYENDO);
                     clientes_llegaron_biblioteca.Find(cli => cli.Equals(cliente)).setFin_uso_instalacion((reloj + formulario.tiempo_uso_instalacion).ToString());
                     cliente.setPidioLibro(true);
-                    tiempo_permanencia += formulario.tiempo_uso_instalacion;
                 }
                 else
                 {
