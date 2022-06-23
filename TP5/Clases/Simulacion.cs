@@ -38,6 +38,7 @@ namespace TP5.Clases
         private Cliente prox_cliente_fin_uso_instalacion;
         private int cantidad_iteracciones = 0;
         private bool iteracciones_cumplidas = false;
+        private List<Cliente> clientes_leyendo = new List<Cliente>();
 
         public Simulacion(Form1 formulario)
         {
@@ -342,6 +343,7 @@ namespace TP5.Clases
             prox_cliente_fin_uso_instalacion.setFin_uso_instalacion("");
             prox_cliente_fin_uso_instalacion.setAccion("Devolucion");
             simular_llegada(prox_cliente_fin_uso_instalacion);
+            clientes_leyendo.RemoveAt(0);
             prox_cliente_fin_uso_instalacion = null;
         }
 
@@ -372,6 +374,7 @@ namespace TP5.Clases
                 {
                     clientes_llegaron_biblioteca.Find(cli => cli.Equals(cliente)).setEstado(Cliente.LEYENDO);
                     clientes_llegaron_biblioteca.Find(cli => cli.Equals(cliente)).setFin_uso_instalacion((reloj + formulario.tiempo_uso_instalacion).ToString());
+                    clientes_leyendo.Add(clientes_llegaron_biblioteca.Find(cli => cli.Equals(cliente)));
                     cliente.setPidioLibro(true);
                 }
                 else
@@ -393,27 +396,29 @@ namespace TP5.Clases
             {
                 foreach (Cliente cliente in clientes)
                 {
+                    bool existe = true;
                     string persona = cliente.getNombre();
                     if (!dataTable.Columns.Contains("Estado (" + persona + ")"))
                     {
                         DataColumn column_estado = new DataColumn("Estado (" + persona + ")");
                         dataTable.Columns.Add(column_estado);
+                        existe = false;
                     }
 
-                    if (!dataTable.Columns.Contains("Hs llegada (" + persona + ")"))
+                    if (!existe && !dataTable.Columns.Contains("Hs llegada (" + persona + ")"))
                     {
                         DataColumn column_hs_llegada = new DataColumn("Hs llegada (" + persona + ")");
                         dataTable.Columns.Add(column_hs_llegada);
                     }
 
-                    if (!dataTable.Columns.Contains("Fin uso instalacion (" + persona + ")"))
+                    if (!existe && !dataTable.Columns.Contains("Fin uso instalacion (" + persona + ")"))
                     {
                         DataColumn column_fin_uso_inst = new DataColumn("Fin uso instalacion (" + persona + ")");
                         dataTable.Columns.Add(column_fin_uso_inst);
 
                     }
 
-                    if (!dataTable.Columns.Contains("Accion (" + persona + ")"))
+                    if (!existe && !dataTable.Columns.Contains("Accion (" + persona + ")"))
                     {
                         DataColumn column_accion = new DataColumn("Accion (" + persona + ")");
                         dataTable.Columns.Add(column_accion);
@@ -424,15 +429,16 @@ namespace TP5.Clases
 
         private double proximo_fin_uso_instalacion()
         {
-            double min = NUMERO_GRANDE;
-            foreach (Cliente cliente in clientes_permanencen_biblioteca) {
-                if (cliente.getFin_uso_instalacion() != null && cliente.getFin_uso_instalacion() != "" && double.Parse(cliente.getFin_uso_instalacion()) < min)
-                {
-                    min = double.Parse(cliente.getFin_uso_instalacion());
-                    prox_cliente_fin_uso_instalacion = cliente;
-                }
+            Cliente firstOrDefault = clientes_leyendo.FirstOrDefault();
+            if (firstOrDefault != null)
+            {
+                prox_cliente_fin_uso_instalacion = firstOrDefault;
+                var fin_uso = firstOrDefault.getFin_uso_instalacion();
+                return double.Parse(fin_uso);
+            } else
+            {
+                return NUMERO_GRANDE;
             }
-            return min;
         }
 
         private double salto_reloj(double proxima_llegada, double fin_atencion1, double fin_atencion2, double fin_uso_instalacion)
